@@ -1,0 +1,43 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  Laravel Prisma Schema
+//  Run `php artisan prisma:generate` to turn this into Laravel migrations.
+//  Docs: https://github.com/Zowesoft/laravel-prisma
+// ─────────────────────────────────────────────────────────────────────────────
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Supported field types:
+//    String    @db.VarChar(255)   → string / varchar
+//    String                       → text
+//    Int                          → integer
+//    BigInt                       → bigInteger
+//    Float                        → float
+//    Decimal   @db.Decimal(10,2)  → decimal
+//    Boolean                      → boolean
+//    DateTime                     → timestamp
+//    Json                         → json
+//    Bytes                        → binary
+//
+//  Modifiers:
+//    ?            nullable
+//    @id          primary key
+//    @unique      unique index
+//    @default(x)  default value  (autoincrement(), now(), uuid(), true/false, "value", 0)
+//    @updatedAt   auto-set on update
+//    @@map("x")   custom table name
+//    @@unique([]) composite unique
+//    @@index([])  composite index
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(255)
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

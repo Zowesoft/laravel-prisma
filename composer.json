@@ -1,0 +1,43 @@
+{
+    "name": "Zowesoft/laravel-prisma",
+    "description": "A Laravel wrapper around Prisma — write schema.prisma, run Laravel-style Artisan commands, let Prisma handle the rest.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "prisma", "migrations", "schema", "database", "orm"],
+    "homepage": "https://github.com/Zowesoft/laravel-prisma",
+    "authors": [
+        {
+            "name": "Ifeanyichukwu John",
+            "email": "ifeanyichukwujohn70@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0",
+        "illuminate/console": "^10.0|^11.0",
+        "symfony/process": "^6.0|^7.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Zowesoft\\LaravelPrisma\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Zowesoft\\LaravelPrisma\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Zowesoft\\LaravelPrisma\\LaravelPrismaServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
