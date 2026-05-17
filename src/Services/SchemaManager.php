@@ -110,7 +110,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
 }
 
 // Define your models below.

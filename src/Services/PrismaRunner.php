@@ -51,7 +51,7 @@ class PrismaRunner
     public function install(callable $output): bool
     {
         return $this->run(
-            command: ['npm', 'install', 'prisma', '--save-dev'],
+            command: ['npm', 'install', 'prisma@latest', '--save-dev'],
             cwd:     base_path(),
             output:  $output,
         );

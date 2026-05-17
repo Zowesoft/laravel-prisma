@@ -31,7 +31,7 @@ Database updated ✅
 ## Requirements
 
 - PHP 8.1+
-- Laravel 10.x / 11.x
+- Laravel 10.x / 11.x / 12.x / 13.x
 - **Node.js 18+** (Prisma is a Node.js tool)
 - **npm** (comes with Node.js)
 
@@ -59,7 +59,7 @@ php artisan prisma:install
 
 This will:
 - Check that Node.js and npx are available
-- Run `npm install prisma --save-dev` with live progress output
+- Run `npm install prisma@latest --save-dev` with live progress output
 - Create `prisma/schema.prisma` pre-configured with your Laravel DB provider
 - Write `DATABASE_URL` to your `.env` built from your existing `DB_*` variables
 
@@ -80,7 +80,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
 }
 
 model User {
