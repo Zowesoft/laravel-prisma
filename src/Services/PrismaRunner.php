@@ -8,26 +8,29 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 class PrismaRunner
 {
     public function __construct(
-        private string $npxPath,
+        private string $packageManager,
+        private string $executorPath,
         private int    $timeout,
     ) {}
 
     /**
-     * Check whether Node.js is available on the system.
+     * Check whether Node.js or Bun is available on the system.
      */
     public function nodeAvailable(): bool
     {
-        $process = new Process(['node', '--version']);
+        $binary = $this->packageManager === 'bun' ? 'bun' : 'node';
+        $process = new Process([$binary, '--version']);
         $process->run();
         return $process->isSuccessful();
     }
 
     /**
-     * Check whether npx is available.
+     * Check whether the package manager executor is available.
      */
-    public function npxAvailable(): bool
+    public function executorAvailable(): bool
     {
-        $process = new Process([$this->npxPath, '--version']);
+        $command = $this->getExecutorCommand();
+        $process = new Process([...$command, '--version']);
         $process->run();
         return $process->isSuccessful();
     }
@@ -43,15 +46,12 @@ class PrismaRunner
     }
 
     /**
-     * Install Prisma via npm with live terminal output.
-     * Streams every line of npm output back through the $output callback.
-     *
-     * @param callable $output  fn(string $type, string $line) — type is 'out' or 'err'
+     * Install Prisma via the chosen package manager.
      */
     public function install(callable $output): bool
     {
         return $this->run(
-            command: ['npm', 'install', 'prisma@latest', '--save-dev'],
+            command: $this->getInstallCommand(),
             cwd:     base_path(),
             output:  $output,
         );
@@ -59,15 +59,11 @@ class PrismaRunner
 
     /**
      * Run `prisma migrate dev` with live output.
-     * This is the primary command — generates SQL files and applies them.
-     *
-     * @param callable $output  fn(string $type, string $line)
-     * @param string|null $name Optional migration name (--name flag)
      */
     public function migrateDev(callable $output, ?string $name = null): bool
     {
         $command = [
-            $this->npxPath,
+            ...$this->getExecutorCommand(),
             'prisma',
             'migrate',
             'dev',
@@ -87,13 +83,13 @@ class PrismaRunner
     }
 
     /**
-     * Run `prisma migrate status` — shows pending migrations.
+     * Run `prisma migrate status`.
      */
     public function migrateStatus(callable $output): bool
     {
         return $this->run(
             command: [
-                $this->npxPath,
+                ...$this->getExecutorCommand(),
                 'prisma',
                 'migrate',
                 'status',
@@ -105,12 +101,12 @@ class PrismaRunner
     }
 
     /**
-     * Run `prisma migrate reset` — resets the database.
+     * Run `prisma migrate reset`.
      */
     public function migrateReset(callable $output, bool $force = false): bool
     {
         $command = [
-            $this->npxPath,
+            ...$this->getExecutorCommand(),
             'prisma',
             'migrate',
             'reset',
@@ -129,13 +125,13 @@ class PrismaRunner
     }
 
     /**
-     * Run `prisma format` — formats the schema file.
+     * Run `prisma format`.
      */
     public function format(callable $output): bool
     {
         return $this->run(
             command: [
-                $this->npxPath,
+                ...$this->getExecutorCommand(),
                 'prisma',
                 'format',
                 '--schema=' . config('laravel-prisma.schema_path'),
@@ -146,13 +142,13 @@ class PrismaRunner
     }
 
     /**
-     * Run `prisma validate` — validates the schema.
+     * Run `prisma validate`.
      */
     public function validate(callable $output): bool
     {
         return $this->run(
             command: [
-                $this->npxPath,
+                ...$this->getExecutorCommand(),
                 'prisma',
                 'validate',
                 '--schema=' . config('laravel-prisma.schema_path'),
@@ -160,6 +156,36 @@ class PrismaRunner
             cwd:    base_path(),
             output: $output,
         );
+    }
+
+    /**
+     * Get the installation command for the package manager.
+     */
+    private function getInstallCommand(): array
+    {
+        return match ($this->packageManager) {
+            'pnpm' => ['pnpm', 'add', '-D', 'prisma@latest'],
+            'yarn' => ['yarn', 'add', '--dev', 'prisma@latest'],
+            'bun'  => ['bun', 'add', '--dev', 'prisma@latest'],
+            default => ['npm', 'install', 'prisma@latest', '--save-dev'],
+        };
+    }
+
+    /**
+     * Get the base executor command (npx, pnpm dlx, etc.)
+     */
+    private function getExecutorCommand(): array
+    {
+        if ($this->executorPath) {
+            return [$this->executorPath];
+        }
+
+        return match ($this->packageManager) {
+            'pnpm' => ['pnpm', 'dlx'],
+            'yarn' => ['yarn', 'dlx'],
+            'bun'  => ['bunx'],
+            default => ['npx'],
+        };
     }
 
     // -------------------------------------------------------------------------

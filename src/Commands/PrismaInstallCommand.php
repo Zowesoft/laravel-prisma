@@ -9,51 +9,58 @@ use Zowesoft\LaravelPrisma\Services\SchemaManager;
 class PrismaInstallCommand extends Command
 {
     protected $signature   = 'prisma:install';
-    protected $description = 'Install the Prisma CLI via npm and scaffold prisma/schema.prisma';
+    protected $description = 'Install the Prisma CLI via the configured package manager and scaffold prisma/schema.prisma';
 
     public function handle(PrismaRunner $runner, SchemaManager $schema): int
     {
+        $pm = config('laravel-prisma.package_manager', 'npm');
+
         $this->line('');
         $this->line('  <info>Laravel Prisma — Installer</info>');
         $this->line('  ─────────────────────────────────────');
         $this->line('');
 
-        // ── 1. Check Node.js ─────────────────────────────────────────────────
-        $this->line('  <comment>[1/3]</comment> Checking Node.js...');
+        // ── 1. Check Runtime (Node/Bun) ──────────────────────────────────────
+        $runtime = $pm === 'bun' ? 'Bun' : 'Node.js';
+        $this->line("  <comment>[1/3]</comment> Checking {$runtime}...");
 
         if (! $runner->nodeAvailable()) {
             $this->line('');
-            $this->error('  Node.js is not installed or not in PATH.');
+            $this->error("  {$runtime} is not installed or not in PATH.");
             $this->line('');
-            $this->line('  Install Node.js from: <href=https://nodejs.org>https://nodejs.org</href>');
-            $this->line('  Recommended version : Node.js 18 LTS or higher');
+            if ($pm === 'bun') {
+                $this->line('  Install Bun from: <href=https://bun.sh>https://bun.sh</href>');
+            } else {
+                $this->line('  Install Node.js from: <href=https://nodejs.org>https://nodejs.org</href>');
+                $this->line('  Recommended version : Node.js 18 LTS or higher');
+            }
             $this->line('');
             return self::FAILURE;
         }
 
-        $this->line('  <info>✓</info> Node.js found.');
+        $this->line("  <info>✓</info> {$runtime} found.");
         $this->line('');
 
-        // ── 2. Check npx ─────────────────────────────────────────────────────
-        $this->line('  <comment>[2/3]</comment> Checking npx...');
+        // ── 2. Check Executor ────────────────────────────────────────────────
+        $this->line('  <comment>[2/3]</comment> Checking package manager executor...');
 
-        if (! $runner->npxAvailable()) {
-            $this->error('  npx is not available. Please update npm: npm install -g npm');
+        if (! $runner->executorAvailable()) {
+            $this->error("  The executor for {$pm} is not available.");
             return self::FAILURE;
         }
 
-        $this->line('  <info>✓</info> npx found.');
+        $this->line('  <info>✓</info> Executor found.');
         $this->line('');
 
         // ── 3. Install Prisma ─────────────────────────────────────────────────
         if ($runner->prismaInstalled()) {
             $this->line('  <comment>[3/3]</comment> Prisma is already installed.');
         } else {
-            $this->line('  <comment>[3/3]</comment> Installing Prisma via npm...');
+            $this->line("  <comment>[3/3]</comment> Installing Prisma via {$pm}...");
             $this->line('');
 
             $success = $runner->install(function (string $type, string $line) {
-                // Stream every line of npm output live
+                // Stream output live
                 if ($type === 'err' && ! $this->looksLikeWarning($line)) {
                     $this->line("  <fg=red>{$line}</fg=red>");
                 } else {

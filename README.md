@@ -58,10 +58,21 @@ php artisan prisma:install
 ```
 
 This will:
-- Check that Node.js and npx are available
-- Run `npm install prisma@latest --save-dev` with live progress output
+- Check that your runtime (Node.js/Bun) and package manager are available
+- Run the installation command (e.g., `npm install prisma@latest --save-dev`) with live progress output
 - Create `prisma/schema.prisma` pre-configured with your Laravel DB provider
 - Write `DATABASE_URL` to your `.env` built from your existing `DB_*` variables
+
+---
+
+## Configuration
+
+You can customize the package behavior in `config/laravel-prisma.php`. Key options include:
+
+- `package_manager`: Choose your preferred package manager (`npm`, `pnpm`, `yarn`, or `bun`). Defaults to `npm`.
+- `executor_path`: Manually specify the path to your executor (e.g., `/usr/local/bin/pnpm`).
+- `schema_path`: Where your `schema.prisma` file is located.
+- `timeout`: Maximum seconds to wait for Prisma commands.
 
 ---
 
@@ -131,7 +142,7 @@ php artisan prisma:generate --name=add_posts_table
 
 | Command | Description |
 |---------|-------------|
-| `php artisan prisma:install` | Install Prisma via npm + scaffold schema.prisma |
+| `php artisan prisma:install` | Install Prisma via your package manager + scaffold schema.prisma |
 | `php artisan prisma:init` | (Re)scaffold schema.prisma from your Laravel DB config |
 | `php artisan prisma:generate` | Sync DB config → run `prisma migrate dev` |
 | `php artisan prisma:generate --name=foo` | Same, with a named migration |

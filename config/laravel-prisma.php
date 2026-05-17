@@ -24,14 +24,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Node / npx Binary
+    | Package Manager
     |--------------------------------------------------------------------------
-    | Path to the npx executable. Usually auto-detected, but you can
-    | hardcode it here if your server uses a non-standard install path.
-    | e.g. '/usr/local/bin/npx' or '/home/user/.nvm/versions/node/v20/bin/npx'
+    | The package manager you use for your project.
+    | Supported: "npm", "pnpm", "yarn", "bun"
     |
     */
-    'npx_path' => env('PRISMA_NPX_PATH', 'npx'),
+    'package_manager' => env('PRISMA_PACKAGE_MANAGER', 'npm'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Node / Package Manager Executor Binary
+    |--------------------------------------------------------------------------
+    | Path to the executor binary (npx, pnpm, yarn, bunx).
+    | Usually auto-detected, but you can hardcode it here.
+    |
+    */
+    'executor_path' => env('PRISMA_EXECUTOR_PATH', null),
 
     /*
     |--------------------------------------------------------------------------
