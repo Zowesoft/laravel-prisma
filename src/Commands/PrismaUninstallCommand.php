@@ -20,7 +20,7 @@ class PrismaUninstallCommand extends Command
         $this->line('');
 
         if (! $this->option('force')) {
-            if (! $this->confirm('  This will remove your prisma/ directory, prisma.config.ts and uninstall the prisma package. Are you sure?', false)) {
+            if (! $this->confirm('  This will remove your prisma/ directory, config files and uninstall the prisma package. Are you sure?', false)) {
                 $this->info('  Aborted.');
                 return self::SUCCESS;
             }
@@ -28,7 +28,7 @@ class PrismaUninstallCommand extends Command
 
         // ── 1. Uninstall Prisma Package ──────────────────────────────────────
         $pm = config('laravel-prisma.package_manager');
-        $this->line("  <comment>[1/4]</comment> Uninstalling Prisma package via {$pm}...");
+        $this->line("  <comment>[1/5]</comment> Uninstalling Prisma package via {$pm}...");
 
         if ($runner->prismaInstalled()) {
             $success = $runner->uninstall(function (string $type, string $line) {
@@ -54,7 +54,7 @@ class PrismaUninstallCommand extends Command
         $this->line('');
 
         // ── 2. Remove Prisma Directory ───────────────────────────────────────
-        $this->line('  <comment>[2/4]</comment> Removing prisma directory...');
+        $this->line('  <comment>[2/5]</comment> Removing prisma directory...');
         $schemaPath = config('laravel-prisma.schema_path');
         $prismaDir  = dirname($schemaPath);
 
@@ -68,7 +68,7 @@ class PrismaUninstallCommand extends Command
         $this->line('');
 
         // ── 3. Remove Prisma Config ──────────────────────────────────────────
-        $this->line('  <comment>[3/4]</comment> Removing prisma.config.ts...');
+        $this->line('  <comment>[3/5]</comment> Removing prisma.config.ts...');
         $configPath = config('laravel-prisma.config_path');
 
         if (File::exists($configPath)) {
@@ -81,7 +81,7 @@ class PrismaUninstallCommand extends Command
         $this->line('');
 
         // ── 4. Clean up .env ─────────────────────────────────────────────────
-        $this->line('  <comment>[4/4]</comment> Cleaning up .env...');
+        $this->line('  <comment>[4/5]</comment> Cleaning up .env...');
         $urlKey = config('laravel-prisma.database_url_key', 'DATABASE_URL');
 
         if ($envManager->has($urlKey)) {
@@ -89,6 +89,24 @@ class PrismaUninstallCommand extends Command
             $this->line("  <info>✓</info> <comment>{$urlKey}</comment> removed from .env.");
         } else {
             $this->line('  <comment>No DATABASE_URL found in .env — skipping.</comment>');
+        }
+
+        if ($envManager->has('PRISMA_MODE')) {
+            $envManager->remove('PRISMA_MODE');
+            $this->line('  <info>✓</info> <comment>PRISMA_MODE</comment> removed from .env.');
+        }
+
+        $this->line('');
+
+        // ── 5. Remove Laravel Config ──────────────────────────────────────────
+        $this->line('  <comment>[5/5]</comment> Removing Laravel config...');
+        $laravelConfig = config_path('laravel-prisma.php');
+
+        if (File::exists($laravelConfig)) {
+            File::delete($laravelConfig);
+            $this->line("  <info>✓</info> Config <comment>config/laravel-prisma.php</comment> removed.");
+        } else {
+            $this->line('  <comment>Laravel config not found — skipping.</comment>');
         }
 
         $this->line('');
