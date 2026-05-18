@@ -145,12 +145,14 @@ php artisan prisma:generate --name=add_posts_table
 | `php artisan prisma:init` | (Re)scaffold schema.prisma from your Laravel DB config |
 | `php artisan prisma:generate` | Sync DB config → run `prisma migrate dev` |
 | `php artisan prisma:generate --name=foo` | Same, with a named migration |
+| `php artisan prisma:generate --create-only` | Create a migration without applying it |
 | `php artisan prisma:status` | Run `prisma migrate status` |
 | `php artisan prisma:reset` | Run `prisma migrate reset` (drops all data!) |
 | `php artisan prisma:validate` | Validate schema.prisma for syntax errors |
 | `php artisan prisma:format` | Format schema.prisma with Prisma's formatter |
 | `php artisan prisma:pull` | Pull existing database schema into `schema.prisma` |
 | `php artisan prisma:prettify` | Rename pulled models to PascalCase singular (Prisma style) |
+| `php artisan prisma:baseline` | Baseline an existing database to start using migrations |
 | `php artisan prisma:push` | Push `schema.prisma` to the database without migrations |
 | `php artisan prisma:resolve` | Resolve a failed migration in the history |
 

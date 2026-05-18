@@ -60,7 +60,7 @@ class PrismaRunner
     /**
      * Run `prisma migrate dev` with live output.
      */
-    public function migrateDev(callable $output, ?string $name = null): bool
+    public function migrateDev(callable $output, ?string $name = null, bool $createOnly = false, bool $skipSeed = false): bool
     {
         $command = [
             ...$this->getExecutorCommand(),
@@ -73,6 +73,14 @@ class PrismaRunner
         if ($name) {
             $command[] = '--name';
             $command[] = $name;
+        }
+
+        if ($createOnly) {
+            $command[] = '--create-only';
+        }
+
+        if ($skipSeed) {
+            $command[] = '--skip-seed';
         }
 
         return $this->run(
@@ -236,6 +244,31 @@ class PrismaRunner
             cwd:    base_path(),
             output: $output,
         );
+    }
+
+    /**
+     * Run `prisma migrate diff` and return the SQL script.
+     */
+    public function migrateDiffFromEmpty(string $schemaPath): string
+    {
+        $process = new Process([
+            ...$this->getExecutorCommand(),
+            'prisma',
+            'migrate',
+            'diff',
+            '--from-empty',
+            '--to-schema',
+            $schemaPath,
+            '--script',
+        ], base_path(), $this->buildEnv());
+
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            throw new \RuntimeException("Prisma migrate diff failed: " . $process->getErrorOutput());
+        }
+
+        return $process->getOutput();
     }
 
     /**

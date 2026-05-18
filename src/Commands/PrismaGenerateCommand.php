@@ -11,6 +11,8 @@ class PrismaGenerateCommand extends Command
 {
     protected $signature = 'prisma:generate
                             {--name= : Name for the migration (passed to Prisma --name flag)}
+                            {--create-only : Create a migration without applying it}
+                            {--skip-seed : Skip running the seed command}
                             {--skip-sync : Skip syncing DATABASE_URL from Laravel config}';
 
     protected $description = 'Sync DB config and run prisma migrate dev to generate and apply migrations';
@@ -58,7 +60,12 @@ class PrismaGenerateCommand extends Command
 
         // ── Step 2: Run prisma migrate dev ───────────────────────────────────
         $name = $this->option('name');
+        $createOnly = $this->option('create-only');
+        $skipSeed = $this->option('skip-seed');
+
         $label = $name ? " --name={$name}" : '';
+        if ($createOnly) $label .= " --create-only";
+        if ($skipSeed) $label .= " --skip-seed";
 
         $this->line("  <comment>Running: npx prisma migrate dev{$label}</comment>");
         $this->line('  ' . str_repeat('─', 50));
@@ -80,6 +87,8 @@ class PrismaGenerateCommand extends Command
                 }
             },
             name: $name,
+            createOnly: $this->option('create-only'),
+            skipSeed: $this->option('skip-seed'),
         );
 
         $this->line('');
@@ -98,6 +107,9 @@ class PrismaGenerateCommand extends Command
             $this->line('    • Database is unreachable — check DB_HOST, DB_PORT in .env');
             $this->line('    • schema.prisma has a syntax error — run: <comment>php artisan prisma:validate</comment>');
             $this->line('    • Prisma migration history is out of sync — run: <comment>php artisan prisma:status</comment>');
+            $this->line('');
+            $this->line('  <fg=cyan>Note: If drift is detected on an existing database, try:</fg=cyan>');
+            $this->line('    <comment>php artisan prisma:baseline</comment>');
         }
 
         $this->line('');
