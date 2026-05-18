@@ -54,6 +54,18 @@ class SchemaManager
         // Write DATABASE_URL into .env
         $this->envManager->set($urlKey, $databaseUrl);
 
+        // Ensure SQLite file exists if using SQLite
+        if ($provider === 'sqlite') {
+            $sqlitePath = str_replace('file:', '', $databaseUrl);
+            if (! file_exists($sqlitePath) && $sqlitePath !== ':memory:') {
+                $dir = dirname($sqlitePath);
+                if (! is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                touch($sqlitePath);
+            }
+        }
+
         // Update schema.prisma datasource block (remove url property for Prisma 7+)
         $content = file_get_contents($schemaPath);
 

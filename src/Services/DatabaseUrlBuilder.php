@@ -20,6 +20,16 @@ class DatabaseUrlBuilder
             );
         }
 
+        // If an explicit URL is provided in the config, use it
+        if (! empty($db['url'])) {
+            $url = $db['url'];
+            // For SQLite, ensure it has the file: prefix if it's just a path
+            if ($connection === 'sqlite' && ! str_starts_with($url, 'file:')) {
+                return "file:{$url}";
+            }
+            return $url;
+        }
+
         return match ($connection) {
             'mysql', 'mariadb' => $this->buildMysql($db),
             'pgsql'            => $this->buildPostgres($db),
@@ -27,7 +37,7 @@ class DatabaseUrlBuilder
             'sqlsrv'           => $this->buildSqlServer($db),
             default            => throw new \RuntimeException(
                 "Unsupported database connection type: [{$connection}]. " .
-                "Prisma supports: mysql, pgsql, sqlite, sqlsrv."
+                    "Prisma supports: mysql, pgsql, sqlite, sqlsrv."
             ),
         };
     }
@@ -92,8 +102,12 @@ class DatabaseUrlBuilder
     {
         $database = $db['database'] ?? '';
 
-        // If it's already an absolute path use it, otherwise resolve from base
-        if (! str_starts_with($database, '/') && ! str_starts_with($database, ':')) {
+        // Detect absolute paths (Unix / or Windows C:\)
+        $isAbsolute = str_starts_with($database, '/') ||
+            str_starts_with($database, '\\') ||
+            (strlen($database) > 1 && $database[1] === ':');
+
+        if (! $isAbsolute && $database !== ':memory:') {
             $database = base_path($database);
         }
 
