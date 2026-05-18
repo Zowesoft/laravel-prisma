@@ -20,14 +20,21 @@ class DatabaseUrlBuilder
             );
         }
 
-        // If an explicit URL is provided in the config, use it
+        // If an explicit URL is provided in the config, use it.
+        // However, we ignore it if it matches the env key we manage (usually DATABASE_URL).
+        // This prevents a stale DATABASE_URL from a previous run (e.g. SQLite)
+        // from overriding the fresh connection parameters when the user switches to MySQL.
         if (! empty($db['url'])) {
-            $url = $db['url'];
-            // For SQLite, ensure it has the file: prefix if it's just a path
-            if ($connection === 'sqlite' && ! str_starts_with($url, 'file:')) {
-                return "file:{$url}";
+            $managedUrl = env(config('laravel-prisma.database_url_key', 'DATABASE_URL'));
+            
+            if ($db['url'] !== $managedUrl) {
+                $url = $db['url'];
+                // For SQLite, ensure it has the file: prefix if it's just a path
+                if ($connection === 'sqlite' && ! str_starts_with($url, 'file:')) {
+                    return "file:{$url}";
+                }
+                return $url;
             }
-            return $url;
         }
 
         return match ($connection) {
