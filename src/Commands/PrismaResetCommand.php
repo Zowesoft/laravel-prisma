@@ -38,7 +38,7 @@ class PrismaResetCommand extends Command
             output: function (string $type, string $line) {
                 $this->line("  {$line}");
             },
-            force: $this->option('force'),
+            force: true, // Always force because we already handled confirmation in Artisan
         );
 
         $this->line('');
