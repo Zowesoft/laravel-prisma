@@ -109,7 +109,10 @@ class PrismaGenerateCommand extends Command
             $this->line('    • Prisma migration history is out of sync — run: <comment>php artisan prisma:status</comment>');
             $this->line('');
             $this->line('  <fg=cyan>Note: If drift is detected on an existing database, try:</fg=cyan>');
-            $this->line('    <comment>php artisan prisma:baseline</comment>');
+            $this->line('    <comment>php artisan prisma:baseline --pull</comment>');
+            $this->line('');
+            $this->line('  <fg=cyan>Or sync without migrations (data-safe for redefines):</fg=cyan>');
+            $this->line('    <comment>php artisan prisma:push --accept-data-loss</comment>');
         }
 
         $this->line('');

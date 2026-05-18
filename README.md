@@ -153,6 +153,7 @@ php artisan prisma:generate --name=add_posts_table
 | `php artisan prisma:pull` | Pull existing database schema into `schema.prisma` |
 | `php artisan prisma:prettify` | Rename pulled models to PascalCase singular (Prisma style) |
 | `php artisan prisma:baseline` | Baseline an existing database to start using migrations |
+| `php artisan prisma:baseline --pull` | Pull current schema and baseline in one step (Best for existing DBs) |
 | `php artisan prisma:push` | Push `schema.prisma` to the database without migrations |
 | `php artisan prisma:resolve` | Resolve a failed migration in the history |
 
