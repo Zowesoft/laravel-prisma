@@ -272,6 +272,44 @@ class PrismaRunner
     }
 
     /**
+     * Run `prisma migrate diff` comparing the datasource in prisma.config.ts against the schema.
+     * Uses --from-config-datasource (Prisma v7+) which reads the live database from the config file
+     * rather than a raw URL. Used by Laravel Mode to detect what has changed without touching the DB.
+     */
+    public function migrateDiffFromConfig(string $schemaPath): string
+    {
+        $configPath = config('laravel-prisma.config_path');
+
+        $command = [
+            ...$this->getExecutorCommand(),
+            'prisma',
+            'migrate',
+            'diff',
+            '--from-config-datasource',
+            '--to-schema',
+            $schemaPath,
+            '--script',
+        ];
+
+        // Pass --config if a custom prisma.config.ts path is configured
+        if ($configPath && file_exists($configPath)) {
+            $command[] = '--config';
+            $command[] = $configPath;
+        }
+
+        $process = new Process($command, base_path(), $this->buildEnv());
+
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            throw new \RuntimeException("Prisma migrate diff failed: " . $process->getErrorOutput());
+        }
+
+        return $process->getOutput();
+    }
+
+
+    /**
      * Get the installation command for the package manager.
      */
     private function getInstallCommand(): array

@@ -74,10 +74,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Process Timeout
+    | Prisma Mode
     |--------------------------------------------------------------------------
-    | Maximum seconds to wait for Prisma CLI commands to complete.
-    | Set to null for no timeout.
+    | 'prisma': Uses native Prisma migration generation (raw SQL in prisma/migrations)
+    | 'laravel': Generates native Laravel PHP migrations from Prisma schema changes
+    |
+    */
+    'mode' => env('PRISMA_MODE', 'prisma'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Command Timeout
+    |--------------------------------------------------------------------------
+    | How long Prisma CLI processes are allowed to run before timing out.
     |
     */
     'timeout' => 300,
