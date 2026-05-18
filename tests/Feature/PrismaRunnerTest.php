@@ -25,6 +25,29 @@ it('builds correct install command for various package managers', function () {
     }
 });
 
+it('builds correct uninstall command for various package managers', function () {
+    $managers = [
+        'npm'  => ['npm', 'uninstall', 'prisma'],
+        'pnpm' => ['pnpm', 'remove', 'prisma'],
+        'yarn' => ['yarn', 'remove', 'prisma'],
+        'bun'  => ['bun', 'remove', 'prisma'],
+    ];
+
+    foreach ($managers as $manager => $expected) {
+        $runner = new PrismaRunner(
+            packageManager: $manager,
+            executorPath:   '',
+            timeout:        300
+        );
+
+        $method = new ReflectionMethod(PrismaRunner::class, 'getUninstallCommand');
+        $method->setAccessible(true);
+        $actual = $method->invoke($runner);
+
+        expect($actual)->toBe($expected);
+    }
+});
+
 it('builds correct executor command for various package managers', function () {
     $executors = [
         'npm'  => ['npx'],

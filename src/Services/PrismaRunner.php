@@ -58,6 +58,18 @@ class PrismaRunner
     }
 
     /**
+     * Uninstall Prisma via the chosen package manager.
+     */
+    public function uninstall(callable $output): bool
+    {
+        return $this->run(
+            command: $this->getUninstallCommand(),
+            cwd:     base_path(),
+            output:  $output,
+        );
+    }
+
+    /**
      * Run `prisma migrate dev` with live output.
      */
     public function migrateDev(callable $output, ?string $name = null, bool $createOnly = false, bool $skipSeed = false): bool
@@ -319,6 +331,19 @@ class PrismaRunner
             'yarn' => ['yarn', 'add', '--dev', 'prisma@latest'],
             'bun'  => ['bun', 'add', '--dev', 'prisma@latest'],
             default => ['npm', 'install', 'prisma@latest', '--save-dev'],
+        };
+    }
+
+    /**
+     * Get the uninstallation command for the package manager.
+     */
+    private function getUninstallCommand(): array
+    {
+        return match ($this->packageManager) {
+            'pnpm' => ['pnpm', 'remove', 'prisma'],
+            'yarn' => ['yarn', 'remove', 'prisma'],
+            'bun'  => ['bun', 'remove', 'prisma'],
+            default => ['npm', 'uninstall', 'prisma'],
         };
     }
 

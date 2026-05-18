@@ -40,6 +40,25 @@ class EnvManager
     }
 
     /**
+     * Remove a key from the .env file.
+     */
+    public function remove(string $key): void
+    {
+        if (! file_exists($this->envPath)) {
+            return;
+        }
+
+        $content = file_get_contents($this->envPath);
+
+        if (preg_match("/^{$key}=.*/m", $content)) {
+            // Remove the key and any preceding "Added by Laravel Prisma" comment
+            $content = preg_replace("/\n\n# Added by Laravel Prisma\n{$key}=.*/", "", $content);
+            $content = preg_replace("/^{$key}=.*\n?/m", "", $content);
+            file_put_contents($this->envPath, $content);
+        }
+    }
+
+    /**
      * Read a key from the .env file directly (not from cached config).
      */
     public function get(string $key): ?string
