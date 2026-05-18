@@ -7,7 +7,11 @@ use Zowesoft\LaravelPrisma\Commands\PrismaFormatCommand;
 use Zowesoft\LaravelPrisma\Commands\PrismaGenerateCommand;
 use Zowesoft\LaravelPrisma\Commands\PrismaInitCommand;
 use Zowesoft\LaravelPrisma\Commands\PrismaInstallCommand;
+use Zowesoft\LaravelPrisma\Commands\PrismaPrettifyCommand;
+use Zowesoft\LaravelPrisma\Commands\PrismaPullCommand;
+use Zowesoft\LaravelPrisma\Commands\PrismaPushCommand;
 use Zowesoft\LaravelPrisma\Commands\PrismaResetCommand;
+use Zowesoft\LaravelPrisma\Commands\PrismaResolveCommand;
 use Zowesoft\LaravelPrisma\Commands\PrismaStatusCommand;
 use Zowesoft\LaravelPrisma\Commands\PrismaValidateCommand;
 use Zowesoft\LaravelPrisma\Services\DatabaseUrlBuilder;
@@ -33,6 +37,10 @@ class LaravelPrismaServiceProvider extends ServiceProvider
                 PrismaResetCommand::class,
                 PrismaValidateCommand::class,
                 PrismaFormatCommand::class,
+                PrismaPullCommand::class,
+                PrismaPushCommand::class,
+                PrismaResolveCommand::class,
+                PrismaPrettifyCommand::class,
             ]);
         }
     }

@@ -159,6 +159,86 @@ class PrismaRunner
     }
 
     /**
+     * Run `prisma db pull`.
+     */
+    public function dbPull(callable $output, bool $force = false): bool
+    {
+        $command = [
+            ...$this->getExecutorCommand(),
+            'prisma',
+            'db',
+            'pull',
+            '--schema=' . config('laravel-prisma.schema_path'),
+        ];
+
+        if ($force) {
+            $command[] = '--force';
+        }
+
+        return $this->run(
+            command: $command,
+            cwd:    base_path(),
+            output: $output,
+        );
+    }
+
+    /**
+     * Run `prisma db push`.
+     */
+    public function dbPush(callable $output, bool $forceReset = false, bool $acceptDataLoss = false): bool
+    {
+        $command = [
+            ...$this->getExecutorCommand(),
+            'prisma',
+            'db',
+            'push',
+            '--schema=' . config('laravel-prisma.schema_path'),
+        ];
+
+        if ($forceReset) {
+            $command[] = '--force-reset';
+        }
+
+        if ($acceptDataLoss) {
+            $command[] = '--accept-data-loss';
+        }
+
+        return $this->run(
+            command: $command,
+            cwd:    base_path(),
+            output: $output,
+        );
+    }
+
+    /**
+     * Run `prisma migrate resolve`.
+     */
+    public function migrateResolve(callable $output, string $migrationName, string $status): bool
+    {
+        $command = [
+            ...$this->getExecutorCommand(),
+            'prisma',
+            'migrate',
+            'resolve',
+            '--schema=' . config('laravel-prisma.schema_path'),
+        ];
+
+        if ($status === 'applied') {
+            $command[] = '--applied';
+        } else {
+            $command[] = '--rolled-back';
+        }
+
+        $command[] = $migrationName;
+
+        return $this->run(
+            command: $command,
+            cwd:    base_path(),
+            output: $output,
+        );
+    }
+
+    /**
      * Get the installation command for the package manager.
      */
     private function getInstallCommand(): array

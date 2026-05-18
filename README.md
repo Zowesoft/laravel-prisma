@@ -149,6 +149,10 @@ php artisan prisma:generate --name=add_posts_table
 | `php artisan prisma:reset` | Run `prisma migrate reset` (drops all data!) |
 | `php artisan prisma:validate` | Validate schema.prisma for syntax errors |
 | `php artisan prisma:format` | Format schema.prisma with Prisma's formatter |
+| `php artisan prisma:pull` | Pull existing database schema into `schema.prisma` |
+| `php artisan prisma:prettify` | Rename pulled models to PascalCase singular (Prisma style) |
+| `php artisan prisma:push` | Push `schema.prisma` to the database without migrations |
+| `php artisan prisma:resolve` | Resolve a failed migration in the history |
 
 ---
 
@@ -173,18 +177,20 @@ The built `DATABASE_URL` is written to your `.env` and passed to Prisma automati
 // config/laravel-prisma.php
 return [
     'schema_path'      => base_path('prisma/schema.prisma'),
+    'config_path'      => base_path('prisma.config.ts'),
     'migrations_path'  => base_path('prisma/migrations'),
-    'npx_path'         => env('PRISMA_NPX_PATH', 'npx'),
+    'package_manager'  => env('PRISMA_PACKAGE_MANAGER', 'npm'),
+    'executor_path'    => env('PRISMA_EXECUTOR_PATH', null),
     'node_modules_path'=> base_path('node_modules'),
     'database_url_key' => 'DATABASE_URL',
     'timeout'          => 300,
 ];
 ```
 
-**If npx is not in PATH on your server** (common on shared hosting), find it and set:
+**If the executor (npx, bunx, etc.) is not in PATH on your server**, find it and set:
 
 ```env
-PRISMA_NPX_PATH=/usr/local/bin/npx
+PRISMA_EXECUTOR_PATH=/usr/local/bin/npx
 ```
 
 ---

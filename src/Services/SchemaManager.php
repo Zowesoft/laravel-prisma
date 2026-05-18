@@ -140,6 +140,63 @@ TYPESCRIPT;
         return file_get_contents($schemaPath);
     }
 
+    /**
+     * Rename snake_case plural models (from db pull) to PascalCase singular.
+     * e.g. model users { ... } -> model User { ... @@map("users") }
+     */
+    public function prettify(): void
+    {
+        $schemaPath = config('laravel-prisma.schema_path');
+        if (! file_exists($schemaPath)) {
+            return;
+        }
+
+        $content = file_get_contents($schemaPath);
+
+        // 1. Find all models and determine their new names
+        preg_match_all('/model\s+(\w+)\s*\{([^}]+)\}/s', $content, $matches, PREG_SET_ORDER);
+
+        $renames = [];
+        foreach ($matches as $match) {
+            $oldName = $match[1];
+            // PascalCase + Singular (e.g. agent_conversation_messages -> AgentConversationMessage)
+            $newName = \Illuminate\Support\Str::studly(\Illuminate\Support\Str::singular($oldName));
+
+            if ($oldName !== $newName) {
+                $renames[$oldName] = $newName;
+            }
+        }
+
+        if (empty($renames)) {
+            return;
+        }
+
+        // 2. Perform renames and add @@map
+        foreach ($renames as $oldName => $newName) {
+            $content = preg_replace_callback(
+                '/model\s+' . $oldName . '\s*\{([^}]+)\}/s',
+                function ($m) use ($oldName, $newName) {
+                    $body = $m[1];
+                    // Add @@map if not already present
+                    if (! str_contains($body, '@@map')) {
+                        $body = rtrim($body) . "\n\n  @@map(\"{$oldName}\")\n";
+                    }
+                    return "model {$newName} {{$body}}";
+                },
+                $content
+            );
+        }
+
+        // 3. Update field types (relations)
+        foreach ($renames as $oldName => $newName) {
+            // Match oldName as a type, possibly followed by ? or []
+            // Use a lookbehind to ensure we aren't matching part of another word
+            $content = preg_replace('/(?<=\s)' . $oldName . '(?=\?|\[\]|\s|$)/m', $newName, $content);
+        }
+
+        file_put_contents($schemaPath, $content);
+    }
+
     // -------------------------------------------------------------------------
 
     private function defaultSchema(): string
