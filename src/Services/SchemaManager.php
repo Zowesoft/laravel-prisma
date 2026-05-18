@@ -10,12 +10,13 @@ class SchemaManager
     ) {}
 
     /**
-     * Ensure the prisma/ directory and schema.prisma exist.
+     * Ensure the prisma/ directory, schema.prisma and prisma.config.ts exist.
      * Creates them with the correct datasource block if missing.
      */
     public function ensureSchema(): void
     {
         $schemaPath = config('laravel-prisma.schema_path');
+        $configPath = config('laravel-prisma.config_path');
         $dir        = dirname($schemaPath);
 
         if (! is_dir($dir)) {
@@ -25,15 +26,20 @@ class SchemaManager
         if (! file_exists($schemaPath)) {
             file_put_contents($schemaPath, $this->defaultSchema());
         }
+
+        if (! file_exists($configPath)) {
+            file_put_contents($configPath, $this->defaultConfig());
+        }
     }
 
     /**
-     * Inject or update the datasource block in schema.prisma so that
-     * the provider and DATABASE_URL always match Laravel's .env.
+     * Inject or update the datasource block in schema.prisma and prisma.config.ts
+     * so that the provider and DATABASE_URL always match Laravel's .env.
      */
     public function syncDatasource(): void
     {
         $schemaPath = config('laravel-prisma.schema_path');
+        $configPath = config('laravel-prisma.config_path');
 
         if (! file_exists($schemaPath)) {
             throw new \RuntimeException(
@@ -48,14 +54,13 @@ class SchemaManager
         // Write DATABASE_URL into .env
         $this->envManager->set($urlKey, $databaseUrl);
 
-        // Update schema.prisma datasource block
+        // Update schema.prisma datasource block (remove url property for Prisma 7+)
         $content = file_get_contents($schemaPath);
 
         $datasourceBlock = <<<PRISMA
-datasource db {
-  provider = "{$provider}"
-  url      = env("{$urlKey}")
-}
+            datasource db {
+            provider = "{$provider}"
+        }
 PRISMA;
 
         if (preg_match('/datasource\s+\w+\s*\{[^}]+\}/s', $content)) {
@@ -71,6 +76,40 @@ PRISMA;
         }
 
         file_put_contents($schemaPath, $content);
+
+        // Update prisma.config.ts
+        $this->syncConfig($configPath, $urlKey);
+    }
+
+    /**
+     * Sync the prisma.config.ts file with the current environment variables.
+     */
+    private function syncConfig(string $configPath, string $urlKey): void
+    {
+        $schemaPath     = str_replace(base_path() . DIRECTORY_SEPARATOR, '', config('laravel-prisma.schema_path'));
+        $migrationsPath = str_replace(base_path() . DIRECTORY_SEPARATOR, '', config('laravel-prisma.migrations_path'));
+
+        // Normalize separators to forward slashes for cross-platform TS config
+        $schemaPath     = str_replace('\\', '/', $schemaPath);
+        $migrationsPath = str_replace('\\', '/', $migrationsPath);
+
+        $configContent = <<<TYPESCRIPT
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
+
+export default defineConfig({
+  schema: "{$schemaPath}",
+  migrations: {
+    path: "{$migrationsPath}",
+    seed: "tsx prisma/seed.ts",
+  },
+  datasource: {
+    url: env("{$urlKey}"),
+  },
+});
+TYPESCRIPT;
+
+        file_put_contents($configPath, $configContent);
     }
 
     /**
@@ -94,7 +133,6 @@ PRISMA;
     private function defaultSchema(): string
     {
         $provider = $this->urlBuilder->provider();
-        $urlKey   = config('laravel-prisma.database_url_key', 'DATABASE_URL');
 
         return <<<PRISMA
 // ──────────────────────────────────────────────────────────────────────────
@@ -106,7 +144,6 @@ PRISMA;
 
 datasource db {
   provider = "{$provider}"
-  url      = env("{$urlKey}")
 }
 
 generator client {
@@ -125,5 +162,32 @@ generator client {
 // }
 
 PRISMA;
+    }
+
+    private function defaultConfig(): string
+    {
+        $urlKey         = config('laravel-prisma.database_url_key', 'DATABASE_URL');
+        $schemaPath     = str_replace(base_path() . DIRECTORY_SEPARATOR, '', config('laravel-prisma.schema_path'));
+        $migrationsPath = str_replace(base_path() . DIRECTORY_SEPARATOR, '', config('laravel-prisma.migrations_path'));
+
+        // Normalize separators to forward slashes
+        $schemaPath     = str_replace('\\', '/', $schemaPath);
+        $migrationsPath = str_replace('\\', '/', $migrationsPath);
+
+        return <<<TYPESCRIPT
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
+
+export default defineConfig({
+  schema: "{$schemaPath}",
+  migrations: {
+    path: "{$migrationsPath}",
+    seed: "tsx prisma/seed.ts",
+  },
+  datasource: {
+    url: env("{$urlKey}"),
+  },
+});
+TYPESCRIPT;
     }
 }

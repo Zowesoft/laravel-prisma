@@ -13,7 +13,7 @@ class PrismaInstallCommand extends Command
 
     public function handle(PrismaRunner $runner, SchemaManager $schema): int
     {
-        $pm = config('laravel-prisma.package_manager', 'npm');
+        $pm = config('laravel-prisma.package_manager');
 
         $this->line('');
         $this->line('  <info>Laravel Prisma — Installer</info>');

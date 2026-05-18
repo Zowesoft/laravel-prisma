@@ -87,7 +87,6 @@ Edit `prisma/schema.prisma`:
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -126,8 +125,8 @@ php artisan prisma:generate
 This will:
 1. Read your Laravel `.env` DB credentials
 2. Build and inject `DATABASE_URL` into `.env`
-3. Update the `datasource` block in `schema.prisma`
-4. Run `npx prisma migrate dev` — live output streamed to your terminal
+3. Update the `datasource` block in `schema.prisma` and sync `prisma.config.ts`
+4. Run your package manager's executor (e.g., `npx prisma migrate dev`) — live output streamed to your terminal
 5. Prisma generates SQL files in `prisma/migrations/` and applies them
 
 **With a custom migration name:**

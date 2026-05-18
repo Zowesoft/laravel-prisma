@@ -14,6 +14,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Prisma Config Path
+    |--------------------------------------------------------------------------
+    | Path to your prisma.config.ts file relative to the Laravel base path.
+    | Prisma 7+ uses this file for datasource configuration.
+    |
+    */
+    'config_path' => base_path('prisma.config.ts'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Prisma Migrations Path
     |--------------------------------------------------------------------------
     | Where Prisma stores its generated SQL migration files.
@@ -30,7 +40,7 @@ return [
     | Supported: "npm", "pnpm", "yarn", "bun"
     |
     */
-    'package_manager' => env('PRISMA_PACKAGE_MANAGER', 'npm'),
+    'package_manager' => env('PRISMA_PACKAGE_MANAGER', 'pnpm'),
 
     /*
     |--------------------------------------------------------------------------

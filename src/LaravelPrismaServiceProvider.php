@@ -53,7 +53,7 @@ class LaravelPrismaServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(PrismaRunner::class, fn() => new PrismaRunner(
-            packageManager: config('laravel-prisma.package_manager', 'npm'),
+            packageManager: config('laravel-prisma.package_manager'),
             executorPath: config('laravel-prisma.executor_path') ?? '',
             timeout: (int) config('laravel-prisma.timeout', 300),
         ));

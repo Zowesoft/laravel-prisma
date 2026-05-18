@@ -67,7 +67,7 @@ class DatabaseUrlBuilder
             $params[] = 'charset=' . $db['charset'];
         }
 
-        if (! empty($db['options'][PDO_MYSQL_ATTR_SSL_CA] ?? null)) {
+        if (! empty($db['options'][\PDO::MYSQL_ATTR_SSL_CA] ?? null)) {
             $params[] = 'sslaccept=strict';
         }
 
