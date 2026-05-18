@@ -1,69 +1,42 @@
 <?php
 
-namespace Zowesoft\LaravelPrisma\Tests\Feature;
-
 use Zowesoft\LaravelPrisma\Services\PrismaRunner;
-use Zowesoft\LaravelPrisma\Tests\TestCase;
-use ReflectionMethod;
 
-class PrismaRunnerTest extends TestCase
-{
-    /** @test */
-    public function it_builds_correct_install_command_for_various_package_managers()
-    {
-        $managers = [
-            'npm'  => ['npm', 'install', 'prisma@latest', '--save-dev'],
-            'pnpm' => ['pnpm', 'add', '-D', 'prisma@latest'],
-            'yarn' => ['yarn', 'add', '--dev', 'prisma@latest'],
-            'bun'  => ['bun', 'add', '--dev', 'prisma@latest'],
-        ];
+it('builds correct install command for various package managers', function () {
+    $managers = [
+        'npm'  => ['npm', 'install', 'prisma@latest', '--save-dev'],
+        'pnpm' => ['pnpm', 'add', '-D', 'prisma@latest'],
+        'yarn' => ['yarn', 'add', '--dev', 'prisma@latest'],
+        'bun'  => ['bun', 'add', '--dev', 'prisma@latest'],
+    ];
 
-        foreach ($managers as $manager => $expected) {
-            $runner = new PrismaRunner(
-                packageManager: $manager,
-                executorPath:   '',
-                timeout:        300
-            );
-
-            $method = new ReflectionMethod(PrismaRunner::class, 'getInstallCommand');
-            $method->setAccessible(true);
-            $actual = $method->invoke($runner);
-
-            $this->assertEquals($expected, $actual);
-        }
-    }
-
-    /** @test */
-    public function it_builds_correct_executor_command_for_various_package_managers()
-    {
-        $executors = [
-            'npm'  => ['npx'],
-            'pnpm' => ['pnpm', 'dlx'],
-            'yarn' => ['yarn', 'dlx'],
-            'bun'  => ['bunx'],
-        ];
-
-        foreach ($executors as $manager => $expected) {
-            $runner = new PrismaRunner(
-                packageManager: $manager,
-                executorPath:   '',
-                timeout:        300
-            );
-
-            $method = new ReflectionMethod(PrismaRunner::class, 'getExecutorCommand');
-            $method->setAccessible(true);
-            $actual = $method->invoke($runner);
-
-            $this->assertEquals($expected, $actual);
-        }
-    }
-
-    /** @test */
-    public function it_overrides_executor_command_when_custom_path_is_provided()
-    {
+    foreach ($managers as $manager => $expected) {
         $runner = new PrismaRunner(
-            packageManager: 'npm',
-            executorPath:   '/usr/bin/custom-npx',
+            packageManager: $manager,
+            executorPath:   '',
+            timeout:        300
+        );
+
+        $method = new ReflectionMethod(PrismaRunner::class, 'getInstallCommand');
+        $method->setAccessible(true);
+        $actual = $method->invoke($runner);
+
+        expect($actual)->toBe($expected);
+    }
+});
+
+it('builds correct executor command for various package managers', function () {
+    $executors = [
+        'npm'  => ['npx'],
+        'pnpm' => ['pnpm', 'dlx'],
+        'yarn' => ['yarn', 'dlx'],
+        'bun'  => ['bunx'],
+    ];
+
+    foreach ($executors as $manager => $expected) {
+        $runner = new PrismaRunner(
+            packageManager: $manager,
+            executorPath:   '',
             timeout:        300
         );
 
@@ -71,19 +44,31 @@ class PrismaRunnerTest extends TestCase
         $method->setAccessible(true);
         $actual = $method->invoke($runner);
 
-        $this->assertEquals(['/usr/bin/custom-npx'], $actual);
+        expect($actual)->toBe($expected);
     }
+});
 
-    /** @test */
-    public function it_correctly_builds_environment_paths()
-    {
-        $runner = new PrismaRunner('npm', '', 300);
+it('overrides executor command when custom path is provided', function () {
+    $runner = new PrismaRunner(
+        packageManager: 'npm',
+        executorPath:   '/usr/bin/custom-npx',
+        timeout:        300
+    );
 
-        $method = new ReflectionMethod(PrismaRunner::class, 'buildEnv');
-        $method->setAccessible(true);
-        $env = $method->invoke($runner);
+    $method = new ReflectionMethod(PrismaRunner::class, 'getExecutorCommand');
+    $method->setAccessible(true);
+    $actual = $method->invoke($runner);
 
-        $this->assertArrayHasKey('PATH', $env);
-        $this->assertStringContainsString('/usr/local/bin', $env['PATH']);
-    }
-}
+    expect($actual)->toBe(['/usr/bin/custom-npx']);
+});
+
+it('correctly builds environment paths', function () {
+    $runner = new PrismaRunner('npm', '', 300);
+
+    $method = new ReflectionMethod(PrismaRunner::class, 'buildEnv');
+    $method->setAccessible(true);
+    $env = $method->invoke($runner);
+
+    expect($env)->toHaveKey('PATH');
+    expect($env['PATH'])->toContain('/usr/local/bin');
+});
