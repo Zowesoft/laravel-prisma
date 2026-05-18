@@ -53,8 +53,8 @@ class SqlStatementParser
      */
     private function splitStatements(string $sql): array
     {
-        // Strip Prisma comment headers like "-- CreateTable", "-- AddColumn" etc.
-        $sql = preg_replace('/^--.*$/m', '', $sql);
+        // Strip Prisma comment headers like "-- CreateTable", "-- AddColumn" etc. (allowing leading whitespace)
+        $sql = preg_replace('/^\s*--.*$/m', '', $sql);
 
         $statements = [];
         $current    = '';
@@ -453,14 +453,14 @@ class SqlStatementParser
     private function parseForeignKey(string $line): ?SqlForeignKey
     {
         preg_match(
-            '/CONSTRAINT\s+[`"\[]?(\w+)[`"\]]?\s+FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+[`"\[]?(\w+)[`"\]]?\s*\(([^)]+)\)(?:\s+ON\s+DELETE\s+(\w+(?:\s+\w+)?))?(?:\s+ON\s+UPDATE\s+(\w+(?:\s+\w+)?))?/i',
+            '/CONSTRAINT\s+[`"\[]?(\w+)[`"\]]?\s+FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+[`"\[]?(\w+)[`"\]]?\s*\(([^)]+)\)(?:\s+ON\s+DELETE\s+(\w+(?:\s+(?!ON\b)\w+)?))?(?:\s+ON\s+UPDATE\s+(\w+(?:\s+(?!ON\b)\w+)?))?/i',
             $line,
             $m
         );
 
         if (empty($m)) {
             preg_match(
-                '/FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+[`"\[]?(\w+)[`"\]]?\s*\(([^)]+)\)(?:\s+ON\s+DELETE\s+(\w+(?:\s+\w+)?))?(?:\s+ON\s+UPDATE\s+(\w+(?:\s+\w+)?))?/i',
+                '/FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+[`"\[]?(\w+)[`"\]]?\s*\(([^)]+)\)(?:\s+ON\s+DELETE\s+(\w+(?:\s+(?!ON\b)\w+)?))?(?:\s+ON\s+UPDATE\s+(\w+(?:\s+(?!ON\b)\w+)?))?/i',
                 $line,
                 $m2
             );

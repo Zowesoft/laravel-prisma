@@ -134,11 +134,6 @@ class DatabaseUrlBuilder
 
     private function encodePassword(string $password): string
     {
-        // URL-encode special characters that would break the connection string
-        return str_replace(
-            ['@', '/', '?', '#', '[', ']', '!', '$', '&', "'", '(', ')', '*', '+', ',', ';', '=', '%'],
-            ['%40', '%2F', '%3F', '%23', '%5B', '%5D', '%21', '%24', '%26', '%27', '%28', '%29', '%2A', '%2B', '%2C', '%3B', '%3D', '%25'],
-            $password
-        );
+        return rawurlencode($password);
     }
 }
